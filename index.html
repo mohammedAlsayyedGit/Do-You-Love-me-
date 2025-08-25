@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Do you love me?</title>
+  <style>
+    :root { --bg:#0f1220; --card:#ffe9e6; --txt:#222; --accent:#ff6b81; --ok:#18c964; }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100svh; display:grid; place-items:center;
+      background: radial-gradient(1200px 800px at 50% -200px, #1b1f39 0, #0f1220 60%);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans", Arial, sans-serif;
+    }
+    .card{
+      width:min(92dvw,520px); background:var(--card); color:var(--txt);
+      border-radius:22px; padding:28px; box-shadow:0 20px 60px #0005;
+      text-align:center; position:relative; overflow:hidden;
+    }
+    .gif{
+      width:220px; aspect-ratio:1/1; margin:0 auto 12px; border-radius:16px; overflow:hidden;
+      background:#fff;
+      display:grid; place-items:center; font-size:42px;
+    }
+    .question{ margin:10px 0 18px; font-weight:700; font-size:28px; }
+    .buttons{
+      position:relative; margin:0 auto; width:min(90%,360px); height:160px;
+      display:flex; align-items:center; justify-content:center; gap:14px;
+      /* a playground area where the NO button can run around */
+      border-radius:16px; padding:8px;
+    }
+    button{
+      border:0; padding:12px 18px; border-radius:999px; font-weight:700; cursor:pointer;
+      transition:transform .12s ease, box-shadow .12s ease, background .2s ease;
+      box-shadow:0 6px 16px #0002;
+    }
+    #yes{ background:var(--ok); color:white; }
+    #no{ background:var(--accent); color:white; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); }
+    button:active{ transform:scale(.96) }
+    .result{ display:none; margin-top:10px; }
+    .result.show{ display:block; }
+    .hearts{
+      position:absolute; inset:auto 0 -30px 0; height:120px; pointer-events:none;
+      background:
+        radial-gradient(circle at 10% 30%, #ff7a90 10px, #0000 12px),
+        radial-gradient(circle at 40% 60%, #ff7a90 10px, #0000 12px),
+        radial-gradient(circle at 70% 40%, #ff7a90 8px,  #0000 10px),
+        radial-gradient(circle at 85% 70%, #ff7a90 12px, #0000 14px);
+      animation: rise 3s linear infinite;
+      opacity:.55;
+    }
+    @keyframes rise {
+      0%   { transform: translateY(40px); }
+      100% { transform: translateY(-120px); }
+    }
+    .byline{position:absolute; right:12px; bottom:8px; font-size:12px; opacity:.6}
+  </style>
+</head>
+<body>
+  <main class="card" aria-live="polite">
+    <figure class="gif" aria-hidden="true">💞</figure>
+    <h1 class="question" id="q">Do you love me?</h1>
+
+    <div class="buttons" id="arena">
+      <button id="yes" type="button">Yes</button>
+      <button id="no"  type="button" aria-label="Nope">No</button>
+    </div>
+
+    <section class="result" id="result">
+      <h2 style="margin:6px 0 2px">I knew it! 🥰</h2>
+      <p style="margin:0">Love you more 💗</p>
+    </section>
+
+    <div class="hearts" aria-hidden="true"></div>
+  </main>
+
+  <script>
+    const arena  = document.getElementById('arena');
+    const noBtn  = document.getElementById('no');
+    const yesBtn = document.getElementById('yes');
+    const result = document.getElementById('result');
+    const q      = document.getElementById('q');
+
+    // Move the "No" button to a random spot inside the arena
+    function moveNo() {
+      const a = arena.getBoundingClientRect();
+      const b = noBtn.getBoundingClientRect();
+      // available space minus the button size + small padding
+      const maxLeft = Math.max(0, a.width  - b.width  - 8);
+      const maxTop  = Math.max(0, a.height - b.height - 8);
+      const left = Math.floor(Math.random() * maxLeft);
+      const top  = Math.floor(Math.random() * maxTop);
+      noBtn.style.left = left + "px";
+      noBtn.style.top  = top  + "px";
+      noBtn.style.transform = "translate(0,0)";
+    }
+
+    // Flee on hover/focus/press (desktop + mobile)
+    ["mouseenter","pointerenter","focus","touchstart","mousedown","click"].forEach(evt=>{
+      noBtn.addEventListener(evt, e => {
+        e.preventDefault();
+        moveNo();
+      }, {passive:false});
+    });
+
+    // Also flee if the pointer gets too close (fun!)
+    arena.addEventListener("pointermove", (e)=>{
+      const r = noBtn.getBoundingClientRect();
+      const distX = Math.abs(e.clientX - (r.left + r.width/2));
+      const distY = Math.abs(e.clientY - (r.top  + r.height/2));
+      if (distX < 80 && distY < 60) moveNo();
+    });
+
+    // When clicking "Yes"
+    yesBtn.addEventListener("click", ()=>{
+      arena.style.display = "none";
+      q.textContent = "Yaaay! ❤️";
+      result.classList.add("show");
+    });
+
+    // First random position so it's not centered
+    moveNo();
+    // Keep it inside if window resizes
+    addEventListener("resize", moveNo);
+  </script>
+</body>
+</html>
